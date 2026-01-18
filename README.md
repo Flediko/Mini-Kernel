@@ -104,6 +104,3 @@ make run
 
 This project is licensed under the GPL-3.0 License - see the [gpl-3.0.txt](gpl-3.0.txt) file for details.
 
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
