@@ -1,8 +1,25 @@
-# MiniOS
+<h1 align="center">
+  🧠 MiniOS
+</h1>
 
-A minimal operating system implementation written in C and assembly. This project demonstrates the fundamental concepts of operating system development, including boot process, kernel initialization, memory management, and basic system utilities.
+<p align="center">
+  ⚔️ A Minimal Operating System • 🛠️ Built in C & Assembly  
+</p>
 
-## Project Structure
+<p align="center">
+  Low-level systems programming • Kernel fundamentals • OS internals
+</p>
+
+---
+
+## 🧬 Project Overview
+**MiniOS** is a minimal operating system implementation written in **C and x86 Assembly**.  
+This project demonstrates fundamental OS concepts including the boot process, kernel
+initialization, memory management, and basic system utilities.
+
+---
+
+## 🗺️ Project Structure
 
 - `boot/` - Bootloader and early initialization code
 - `include/` - Header files and system definitions
@@ -12,34 +29,69 @@ A minimal operating system implementation written in C and assembly. This projec
 - `mm/` - Memory management implementation
 - `tools/` - System tools and shell implementation
 
-## Building the Project
 
-### Prerequisites
 
-- GCC (with 32-bit support)
-- NASM (Netwide Assembler)
+
+---
+
+## ⚙️ Features
+- Custom bootloader
+- Kernel initialization
+- Memory management
+- Console & keyboard support
+- Simple shell interface
+- Basic system utilities
+
+---
+
+## 🛠️ Tech Stack
+<p align="center">
+  <img src="https://img.shields.io/badge/C-blue?style=for-the-badge&logo=c" />
+  <img src="https://img.shields.io/badge/x86_Assembly-black?style=for-the-badge&logo=assemblyscript" />
+  <img src="https://img.shields.io/badge/GCC-orange?style=for-the-badge&logo=gnu" />
+  <img src="https://img.shields.io/badge/NASM-darkred?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/QEMU-purple?style=for-the-badge" />
+</p>
+
+---
+
+## 🎮 Build & Run
+
+### 🔑 Prerequisites
+- GCC (32-bit support)
+- NASM
 - Make
-- QEMU (for running the OS)
+- QEMU
 
-### Build Instructions
-
-1. Clone the repository:
+### ▶️ Steps
 ```bash
 git clone https://github.com/yourusername/minios.git
 cd minios
-```
-
-2. Build the project:
-```bash
 make
-```
-
-3. Run the OS in QEMU:
-```bash
 make run
 ```
 
-## Features
+### 🧠 System Details
+- Language: C (GNU99), x86 Assembly
+- Architecture: 32-bit
+- Boot Mode: Legacy BIOS
+- Build System: Makefile
+
+### 🧪 Makefile Commands
+- ```make``` — Build the OS
+- ```make clean``` — Clean build files
+- ```make run``` — Run OS in QEMU
+- ```make backup``` — Create project backup
+
+### 🚀 Future Enhancements
+
+- Multitasking support
+- File system implementation
+- Process scheduling
+- Memory protection
+- Basic networking
+
+### Features
 
 - Basic kernel implementation
 - Memory management
@@ -47,21 +99,6 @@ make run
 - Console and keyboard support
 - System initialization
 - Basic system utilities
-
-## Development
-
-The project is built using:
-- C (GNU99 standard)
-- x86 Assembly (NASM)
-- 32-bit architecture
-
-### Build System
-
-The project uses a Makefile-based build system with the following main targets:
-- `make` - Build the entire project
-- `make clean` - Clean build artifacts
-- `make run` - Run the OS in QEMU
-- `make backup` - Create a backup of the project
 
 ## License
 
