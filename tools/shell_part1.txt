@@ -1,0 +1,54 @@
+#include <string.h>
+#include <time.h>
+#include <asm/io.h>
+#include <asm/system.h>
+#include <minios/tty.h>
+#include <minios/kernel.h>
+#include <minios/mm.h>
+#include <minios/fs.h>
+
+extern void timer_wait(size_t ticks);
+extern struct minios_file file_table[];
+
+void prompt(void)
+{
+printk("\nminios $ ");
+}
+
+void shell(void)
+{
+prompt();
+}
+
+static void reboot(void)
+{
+unsigned char good = 0x02;
+while (good & 0x02)
+good = inb(0x64);
+outb(0x64, 0xFE);
+hlt();
+}
+
+static int atoi(const char *str)
+{
+int result = 0;
+int sign = 1;
+int i = 0;
+
+while (str[i] == ' ' || str[i] == '\t')
+i++;
+
+if (str[i] == '-') {
+sign = -1;
+i++;
+} else if (str[i] == '+') {
+i++;
+}
+
+while (str[i] >= '0' && str[i] <= '9') {
+result = result * 10 + (str[i] - '0');
+i++;
+}
+
+return sign * result;
+}

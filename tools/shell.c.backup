@@ -1,0 +1,408 @@
+#include <string.h>
+#include <time.h>
+#include <asm/io.h>
+#include <asm/system.h>
+#include <minios/tty.h>
+#include <minios/kernel.h>
+#include <minios/mm.h>
+#include <minios/fs.h>
+
+extern void timer_wait(size_t ticks);
+extern struct minios_file file_table[];
+
+void prompt(void)
+{
+	printk("\nminios $ ");
+}
+
+void shell(void)
+{
+	prompt();
+}
+
+static void rebo	} else if (strcmp(cmd, "mem") == 0)
+		meminfo();
+	else if (strcmp(cmd, "ls") == 0)
+		cmd_ls();
+	else if (strlen(cmd) > 6 && cmd[0] == 't' && cmd[1] == 'o' && cmd[2] == 'u' && cmd[3] == 'c' && cmd[4] == 'h' && cmd[5] == ' ') {
+		cmd_touch(cmd + 6);
+	} else if (strcmp(cmd, "touch") == 0) {
+		printk("\nUsage: touch <filename>\n");
+	} else if (strlen(cmd) > 3 && cmd[0] == 'r' && cmd[1] == 'm' && cmd[2] == ' ') {
+		cmd_rm(cmd + 3);
+	} else if (strcmp(cmd, "rm") == 0) {
+		printk("\nUsage: rm <filename>\n");
+	} else if (strlen(cmd) > 4 && cmd[0] == 'c' && cmd[1] == 'a' && cmd[2] == 't' && cmd[3] == ' ') {
+		cmd_cat(cmd + 4);
+	} else if (strcmp(cmd, "cat") == 0) {
+		printk("\nUsage: cat <filename>\n");
+	} else if (strlen(cmd) > 5 && cmd[0] == 'c' && cmd[1] == 'a' && cmd[2] == 'l' && cmd[3] == 'c' && cmd[4] == ' ') {
+		calc(cmd + 5);
+	} else if (strcmp(cmd, "calc") == 0) {
+		printk("\nUsage: calc <num1> <op> <num2>\n");
+		printk("Operators: + - * / %%\n");
+		printk("Example: calc 10 + 5\n");
+	} else if (strcmp(cmd, "echo") == 0) {
+		printk("\n");
+	} else if (strlen(cmd) > 5 && cmd[0] == 'e' && cmd[1] == 'c' && cmd[2] == 'h' && cmd[3] == 'o' && cmd[4] == ' ') {
+		/* Check if it's echo to file (contains '>') */
+		int has_redirect = 0;
+		int i;
+		for (i = 5; cmd[i]; i++) {
+			if (cmd[i] == '>') {
+				has_redirect = 1;
+				break;
+			}
+		}
+		if (has_redirect) {
+			cmd_echo_to_file(cmd + 5);
+		} else {
+			printk("\n%s\n", cmd + 5);
+		}
+	} else
+		printk("\nMINI shell : %s : command not found\n", cmd);signed char good = 0x02;
+	while (good & 0x02)
+		good = inb(0x64);
+	outb(0x64, 0xFE);
+	hlt();
+}
+
+/* Simple atoi implementation */
+static int atoi(const char *str)
+{
+	int result = 0;
+	int sign = 1;
+	int i = 0;
+
+	/* Skip whitespace */
+	while (str[i] == ' ' || str[i] == '\t')
+		i++;
+
+	/* Handle sign */
+	if (str[i] == '-') {
+		sign = -1;
+		i++;
+	} else if (str[i] == '+') {
+		i++;
+	}
+
+	/* Convert digits */
+	while (str[i] >= '0' && str[i] <= '9') {
+		result = result * 10 + (str[i] - '0');
+		i++;
+	}
+
+	return sign * result;
+}
+
+/* Memory information command */
+static void meminfo(void)
+{
+	unsigned long total_kb, used_kb, free_kb;
+	unsigned long total_mb, used_mb, free_mb;
+	
+	get_memory_info(&total_kb, &used_kb, &free_kb);
+	
+	total_mb = total_kb / 1024;
+	used_mb = used_kb / 1024;
+	free_mb = free_kb / 1024;
+	
+	printk("\n========================================\n");
+	printk("         Memory Information\n");
+	printk("========================================\n");
+	printk("Total Memory : %lu KB (%lu MB)\n", total_kb, total_mb);
+	printk("Used Memory  : %lu KB (%lu MB)\n", used_kb, used_mb);
+	printk("Free Memory  : %lu KB (%lu MB)\n", free_kb, free_mb);
+	printk("Page Size    : 4 KB\n");
+	printk("Memory Mapped: First 4 MB\n");
+	printk("========================================\n");
+}
+
+/* System information command */
+static void sysinfo(void)
+{
+	printk("\n========================================\n");
+	printk("         System Information\n");
+	printk("========================================\n");
+	printk("OS Name      : %s\n", OS_NAME);
+	printk("Version      : %s\n", VERSION);
+	printk("Architecture : %s\n", OS_ARCH);
+	printk("Build Date   : %s\n", OS_BUILD);
+	printk("Kernel       : MiniOS Kernel\n");
+	printk("Shell        : MINI shell v1.1.12\n");
+	printk("========================================\n");
+}
+
+/* File system commands */
+static void cmd_touch(char *filename)
+{
+	if (filename == (char*)0 || filename[0] == '\0') {
+		printk("\nUsage: touch <filename>\n");
+		return;
+	}
+	
+	int result = fs_create(filename);
+	if (result == 0) {
+		printk("\nFile '%s' created successfully\n", filename);
+	} else if (result == -1) {
+		printk("\nError: File '%s' already exists\n", filename);
+	} else {
+		printk("\nError: No free space (max %d files)\n", 16);
+	}
+}
+
+static void cmd_rm(char *filename)
+{
+	if (filename == (char*)0 || filename[0] == '\0') {
+		printk("\nUsage: rm <filename>\n");
+		return;
+	}
+	
+	int result = fs_delete(filename);
+	if (result == 0) {
+		printk("\nFile '%s' deleted successfully\n", filename);
+	} else {
+		printk("\nError: File '%s' not found\n", filename);
+	}
+}
+
+static void cmd_ls(void)
+{
+	int i;
+	int count = 0;
+	
+	printk("\nFiles in system:\n");
+	printk("================\n");
+	
+	/* Access file_table directly */
+	for (i = 0; i < 16; i++) {
+		extern struct minios_file file_table[];
+		if (file_table[i].used) {
+			printk("%-20s %d bytes\n", file_table[i].name, file_table[i].size);
+			count++;
+		}
+	}
+	
+	if (count == 0) {
+		printk("(empty)\n");
+	}
+	
+	printk("================\n");
+	printk("Total: %d files\n", count);
+}
+
+static void cmd_cat(char *filename)
+{
+	char buffer[4096];
+	int bytes_read;
+	int i;
+	
+	if (filename == (char*)0 || filename[0] == '\0') {
+		printk("\nUsage: cat <filename>\n");
+		return;
+	}
+	
+	bytes_read = fs_read(filename, buffer, 4096);
+	
+	if (bytes_read < 0) {
+		printk("\nError: File '%s' not found\n", filename);
+		return;
+	}
+	
+	printk("\n");
+	for (i = 0; i < bytes_read; i++) {
+		printk("%c", buffer[i]);
+	}
+	printk("\n");
+}
+
+static void cmd_echo_to_file(char *args)
+{
+	char *text_start;
+	char *filename;
+	int i = 0, j = 0;
+	char fname[32];
+	
+	/* Format: text > filename */
+	/* Find the '>' character */
+	while (args[i] && args[i] != '>') {
+		i++;
+	}
+	
+	if (args[i] != '>') {
+		printk("\nUsage: echo text > filename\n");
+		return;
+	}
+	
+	/* Get text (before '>') */
+	text_start = args;
+	int text_len = i;
+	
+	/* Trim trailing spaces before '>' */
+	while (text_len > 0 && text_start[text_len-1] == ' ') {
+		text_len--;
+	}
+	
+	/* Skip '>' and spaces */
+	i++;
+	while (args[i] == ' ') {
+		i++;
+	}
+	
+	/* Get filename */
+	j = 0;
+	while (args[i] && args[i] != ' ' && j < 31) {
+		fname[j++] = args[i++];
+	}
+	fname[j] = '\0';
+	
+	if (fname[0] == '\0') {
+		printk("\nUsage: echo text > filename\n");
+		return;
+	}
+	
+	/* Create file if it doesn't exist */
+	struct minios_file *file = fs_find(fname);
+	if (file == (struct minios_file*)0) {
+		fs_create(fname);
+	}
+	
+	/* Write text to file */
+	int result = fs_write(fname, text_start, text_len);
+	if (result >= 0) {
+		printk("\nWrote %d bytes to '%s'\n", result, fname);
+	} else {
+		printk("\nError writing to file '%s'\n", fname);
+	}
+}
+
+/* Calculator command */
+static void calc(char *args)
+{
+	int num1 = 0, num2 = 0, result = 0;
+	char op = 0;
+	int i = 0, j = 0;
+	char num1_str[20], num2_str[20];
+
+	/* Skip leading spaces */
+	while (args[i] == ' ')
+		i++;
+
+	/* Get first number */
+	j = 0;
+	while (args[i] && args[i] != ' ' && args[i] != '+' && args[i] != '-' && 
+	       args[i] != '*' && args[i] != '/' && args[i] != '%') {
+		num1_str[j++] = args[i++];
+	}
+	num1_str[j] = '\0';
+	num1 = atoi(num1_str);
+
+	/* Skip spaces and get operator */
+	while (args[i] == ' ')
+		i++;
+	op = args[i++];
+
+	/* Skip spaces */
+	while (args[i] == ' ')
+		i++;
+
+	/* Get second number */
+	j = 0;
+	while (args[i] && args[i] != ' ') {
+		num2_str[j++] = args[i++];
+	}
+	num2_str[j] = '\0';
+	num2 = atoi(num2_str);
+
+	/* Calculate result */
+	switch (op) {
+	case '+':
+		result = num1 + num2;
+		printk("\n%d + %d = %d\n", num1, num2, result);
+		break;
+	case '-':
+		result = num1 - num2;
+		printk("\n%d - %d = %d\n", num1, num2, result);
+		break;
+	case '*':
+		result = num1 * num2;
+		printk("\n%d * %d = %d\n", num1, num2, result);
+		break;
+	case '/':
+		if (num2 == 0) {
+			printk("\nError: Division by zero\n");
+		} else {
+			result = num1 / num2;
+			printk("\n%d / %d = %d\n", num1, num2, result);
+		}
+		break;
+	case '%':
+		if (num2 == 0) {
+			printk("\nError: Modulo by zero\n");
+		} else {
+			result = num1 % num2;
+			printk("\n%d %% %d = %d\n", num1, num2, result);
+		}
+		break;
+	default:
+		printk("\nUsage: calc <num1> <op> <num2>\n");
+		printk("Operators: + - * / %%\n");
+		printk("Example: calc 10 + 5\n");
+		break;
+	}
+}
+
+static void help(void)
+{
+	printk("\nMINI shell, version 1.1.12-stable (minios-%s)\n", VERSION);
+	printk("These commands are defined internally.\n\n");
+	printk(" calc		calculator (usage: calc <num1> <op> <num2>)\n");
+	printk(" cat		display file contents\n");
+	printk(" clear		clear the screen\n");
+	printk(" echo		print text or write to file (echo text > file)\n");
+	printk(" help		print this help list\n");
+	printk(" halt		halt the system\n");
+	printk(" ls		list files\n");
+	printk(" mem		show memory information\n");
+	printk(" reboot		reboot the system\n");
+	printk(" rm		remove file\n");
+	printk(" sysinfo	show system information\n");
+	printk(" touch		create empty file\n");
+}
+
+void proccmd(char * cmd)
+{
+	if (strcmp(cmd, "clear") == 0) {
+		clrscr();
+		gotoxy(0, -1);	/* csr_y = -1 because of "\n" in prompt */
+	} else if (strcmp(cmd, "halt") == 0) {
+		printk("\nhalting system...\n");
+		timer_wait(10);
+		printk("\n[NOW]");
+		timer_wait(5);
+		hlt();
+	} else if (strcmp(cmd, "reboot") == 0) {
+		printk("\nrebooting...\n");
+		timer_wait(10);
+		printk("\n[NOW]");
+		timer_wait(5);
+		reboot();
+	} else if (strcmp(cmd, "help") == 0)
+		help();
+	else if (strcmp(cmd, "sysinfo") == 0)
+		sysinfo();
+	else if (strcmp(cmd, "mem") == 0)
+		meminfo();
+	else if (strlen(cmd) > 5 && cmd[0] == 'c' && cmd[1] == 'a' && cmd[2] == 'l' && cmd[3] == 'c' && cmd[4] == ' ') {
+		calc(cmd + 5);
+	} else if (strcmp(cmd, "calc") == 0) {
+		printk("\nUsage: calc <num1> <op> <num2>\n");
+		printk("Operators: + - * / %%\n");
+		printk("Example: calc 10 + 5\n");
+	} else if (strcmp(cmd, "echo") == 0) {
+		printk("\n");
+	} else if (strlen(cmd) > 5 && cmd[0] == 'e' && cmd[1] == 'c' && cmd[2] == 'h' && cmd[3] == 'o' && cmd[4] == ' ') {
+		printk("\n%s\n", cmd + 5);
+	} else
+		printk("\nMINI shell : %s : command not found\n", cmd);
+}
